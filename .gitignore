@@ -1,0 +1,50 @@
+**/*.json
+
+# Ignore all logs
+logs/
+*.log
+
+# Ignore dependency directories
+venv/
+env/
+.venv/
+.env/
+.venv*/
+.env*/
+
+# Ignore Airflow-specific directories and files
+airflow.cfg
+airflow.db
+airflow-webserver.pid
+standalone_admin_password.txt
+
+# Ignore Docker-related files
+data/
+dags/logs/
+dags/__pycache__/
+plugins/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Ignore environment-specific files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignore IDE-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignore any other temporary or generated files
+*.tmp
+*.bak
+*.cache
+*.pid
+*.seed
+*.pid.lock
