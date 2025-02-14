@@ -3,6 +3,7 @@ from airflow.decorators import dag, task
 import requests
 import logging
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+import os
 
 default_args = {
     'owner': 'dez_project',
@@ -19,7 +20,7 @@ def import_daily_data():
 
     @task(multiple_outputs=True)
     def get_daily_api():
-        API_KEY = 'T570D8WT5XC2F4UN'
+        API_KEY = os.getenv('API_KEY_AV')
         companies = ['AAPL','MSFT','GOOG','META','NVDA']
         companies_str = ','.join(companies)
 
