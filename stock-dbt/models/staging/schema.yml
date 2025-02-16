@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: staging
+    database: agile-athlete-449216-m2
+    schema: stock_staging
+
+    tables:
+      - name: company_info_data
+      - name: news_data
+      - name: historical_data
+      
