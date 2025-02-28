@@ -9,4 +9,5 @@ sources:
       - name: company_info_data
       - name: news_data
       - name: historical_data
+      - name: daily_data
       

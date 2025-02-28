@@ -17,7 +17,7 @@ source as (
 renamed as (
 
     select
-        {{ db_utils.generate_surrogate_key(['symbol','date']) }} as company_id,
+        {{ dbt_utils.generate_surrogate_key(['symbol','date']) }} as company_id,
         symbol,
         date,
         assettype,
