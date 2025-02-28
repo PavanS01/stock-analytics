@@ -22,12 +22,17 @@ def import_daily_data():
     def get_daily_api():
         API_KEY = os.getenv('API_KEY_AV')
         companies = ['AAPL','MSFT','GOOG','META','NVDA']
-        companies_str = ','.join(companies)
 
-        url = f'https://www.alphavantage.co/query?function=OVERVIEW&symbol=NVDA&apikey={API_KEY}'
-        r = requests.get(url)
-        data = r.json()
-        data_dict = {'data': data}
+        data_arr = []
+        for comp in companies:
+            try:
+                url = f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={comp}&apikey={API_KEY}'
+                r = requests.get(url)
+                data = r.json()
+                data_arr.append(data)
+            except requests.exceptions.RequestException as e:
+                print(f"Request to {url} failed: {e}")
+        data_dict = {'data': data_arr}
         return data_dict
     
     @task
@@ -37,35 +42,39 @@ def import_daily_data():
             use_legacy_sql=False,
             location='US'
         )
-        
-        records = []
-        d=data_dict['data']
-        #d['Description'] = d['Description'].replace("'", "''")
-        if d['AnalystRatingStrongBuy']=='-':
-            d['AnalystRatingStrongBuy']=-1
-        if d['AnalystRatingBuy']=='-':
-            d['AnalystRatingBuy']=-1
-        if d['AnalystRatingHold']=='-':
-            d['AnalystRatingHold']=-1
-        if d['AnalystRatingSell']=='-':
-            d['AnalystRatingSell']=-1
-        if d['AnalystRatingStrongSell']=='-':
-            d['AnalystRatingStrongSell']=-1
-        records.append(
-                f"('{d['Symbol']}', '{d['AssetType']}', '{d['Name']}', "
-                f"\"\"\"{d['Description']}\"\"\", '{d['Exchange']}', "
-                f"'{d['Currency']}', '{d['Country']}', "
-                f"'{d['Sector']}', '{d['Industry']}', "
-                f"{int(d['MarketCapitalization'])}, {float(d['DividendPerShare'])}, "
-                f"{float(d['AnalystTargetPrice'])}, {int(d['AnalystRatingStrongBuy'])}, "
-                f"{int(d['AnalystRatingBuy'])}, {int(d['AnalystRatingHold'])}, "
-                f"{int(d['AnalystRatingSell'])}, {int(d['AnalystRatingStrongSell'])})")
-        
-        records_str = ", ".join(records)
 
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        records = []
+        data_arr=data_dict['data']
+        records_str = ''
+        for d in data_arr:
+            records = []
+            if d['AnalystRatingStrongBuy']=='-':
+                d['AnalystRatingStrongBuy']=-1
+            if d['AnalystRatingBuy']=='-':
+                d['AnalystRatingBuy']=-1
+            if d['AnalystRatingHold']=='-':
+                d['AnalystRatingHold']=-1
+            if d['AnalystRatingSell']=='-':
+                d['AnalystRatingSell']=-1
+            if d['AnalystRatingStrongSell']=='-':
+                d['AnalystRatingStrongSell']=-1
+            records.append(
+                    f"('{d['Symbol']}', '{current_date}','{d['AssetType']}', '{d['Name']}', "
+                    f"\"\"\"{d['Description']}\"\"\", '{d['Exchange']}', "
+                    f"'{d['Currency']}', '{d['Country']}', "
+                    f"'{d['Sector']}', '{d['Industry']}', "
+                    f"{int(d['MarketCapitalization'])}, {float(d['DividendPerShare'])}, "
+                    f"{float(d['AnalystTargetPrice'])}, {int(d['AnalystRatingStrongBuy'])}, "
+                    f"{int(d['AnalystRatingBuy'])}, {int(d['AnalystRatingHold'])}, "
+                    f"{int(d['AnalystRatingSell'])}, {int(d['AnalystRatingStrongSell'])})")
+        
+            records_str += ", ".join(records)
+            records_str += ", "
+        records_str = records_str[:-2]
         sql_query = f'''
             INSERT INTO `agile-athlete-449216-m2.stock_staging.company_info_data` (
-                Symbol, AssetType, Name, Description, Exchange, Currency, Country, Sector, Industry,
+                Symbol, date, AssetType, Name, Description, Exchange, Currency, Country, Sector, Industry,
                 MarketCapitalization, DividendPerShare, AnalystTargetPrice, AnalystRatingStrongBuy,
                 AnalystRatingBuy, AnalystRatingHold, AnalystRatingSell, AnalystRatingStrongSell
             )
