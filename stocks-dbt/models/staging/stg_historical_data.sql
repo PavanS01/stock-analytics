@@ -27,6 +27,32 @@ renamed as (
 
     from source
 
+),
+
+deduplicated as (
+
+    select
+        *,
+        row_number() over (partition by stock_id order by date desc) as rn
+    from renamed
+
 )
 
-select * from renamed
+select
+    stock_id,
+    symbol,
+    date,
+    open,
+    high,
+    low,
+    close,
+    adjclose,
+    volume,
+    unadjustedvolume,
+    change,
+    changepercent,
+    vwap,
+    label,
+    changeovertime
+from deduplicated
+where rn = 1
